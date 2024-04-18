@@ -22,7 +22,7 @@ public class BipedalKinematics : MonoBehaviour
     public float radius = 0.05f;
 
 
-    [Range(1f, 10f)] public float adaptSpeed = 1f;
+    [Range(0.1f, 10f)] public float adaptSpeed = 1f;
 
     public LayerMask layerMask = 1;
 

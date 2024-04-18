@@ -27,22 +27,26 @@ public class BodyMorphLite : MonoBehaviour
 
     [Header("Body")]
     [Range(0.5f, 1.5f)] public float heightInput = 1.0f;
-
     [Range(0.5f, 1.5f)] public float upperBodyInput = 1.0f;
     [Range(0.5f, 1.5f)] public float lowerBodyInput = 1.0f;
+
     [Header("Head")]
     [Range(0.5f, 1.5f)] public float headInput = 1.0f;
     [Range(0.5f, 1.5f)] public float neckInput = 1.0f;
+
     [Header("UpperBody")]
-    [Range(0.5f, 1.5f)] public float chestInput = 1.0f;
     [Range(0.5f, 1.5f)] public float waistInput = 1.0f;
+    [Range(0.5f, 1.5f)] public float chestInput = 1.0f;
+    [Range(0.5f, 1.5f)] public float spineInput = 1.0f;
     [Range(0.5f, 2.0f)] public float shouldersInput = 1.0f;
+
+    [Header("Arms")]
     [Range(0.5f, 1.5f)] public float upperArmsInput = 1.0f;
     [Range(0.5f, 1.5f)] public float lowerArmsInput = 1.0f;
     [Range(0.5f, 1.5f)] public float handsInput = 1.0f;
     [Range(0.5f, 2.5f)] public float fingersInput = 1.0f;
+
     [Header("LowerBody")]
-    [Range(0.5f, 1.5f)] public float spineInput = 1.0f;
     [Range(0.8f, 1.2f)] public float legsInput = 1.0f;
     [Range(0.5f, 1.5f)] public float feetInput = 1.0f;
     [Range(0.01f, 0.5f)] public float feetRadius = 0.05f;
@@ -101,9 +105,7 @@ public class BodyMorphLite : MonoBehaviour
             rightFinger3 = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
             rightFinger4 = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
 
-            ankleHeight = (rightFoot.transform.position.y - transform.position.y);
-
-         
+            ankleHeight = rightFoot.position.y - transform.position.y;
 
             initialized = true;
 

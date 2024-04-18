@@ -12,10 +12,9 @@ public class Demonstration : MonoBehaviour
     [Range(0f, 5f)] public float speed;
     [Range(0f, 6f)] public float movement;
 
-    private float fallTime;
-    private float jumpTime;
+    int jumpState;
+    float jumpTimer;
 
-    public bool jump;
 
     public GameObject[] objectPool;
     public float dropTime;
@@ -90,9 +89,9 @@ public class Demonstration : MonoBehaviour
             {
                 if (hit.distance < 1f)
                 {
-                    if (hit.transform.localEulerAngles.x >= 0f)
+                    if (hit.transform.localEulerAngles.x >= 0f && movement > 2.5f)
                     {
-                        jump = true;
+                        jumpState=1;
                     }
                 }
             }
@@ -114,7 +113,7 @@ public class Demonstration : MonoBehaviour
        
 
         CharacterMovement();
-
+        Jump();
     }
 
  
@@ -125,47 +124,27 @@ public class Demonstration : MonoBehaviour
         animator.SetFloat("MotionSpeed", speed);
         animator.SetFloat("Speed", movement);
 
-        JumpAndGravity();
-     
     }
 
-    private void JumpAndGravity()
+    private void Jump()
     {
-        if (!jump)
+
+        if (jumpState == 1)
         {
-            fallTime = 0.15f;
-
-            animator.SetBool("Jump", false);
-            animator.SetBool("Fall", false);
-            
-            if (jump && jumpTime <= 0.0f)
+            jumpState = 2;
+            jumpTimer = 0.15f;
+            animator.SetBool("Jump", true);
+        }
+        else if (jumpState == 2)
+        {
+            jumpTimer -= Time.deltaTime;
+            if(jumpTimer <= 0.0f)
             {
-           
-                animator.SetBool("Jump", true);
-                
-            }
-
-            if (jumpTime >= 0.0f)
-            {
-                jumpTime -= Time.deltaTime;
+                jumpState = 0;
+                animator.SetBool("Jump", false);
             }
         }
-        else
-        {
-            jumpTime = 0.5f;
 
-            if (fallTime >= 0.0f)
-            {
-                fallTime -= Time.deltaTime;
-            }
-            else
-            {
-                animator.SetBool("Fall", true);
-                jump = false;
-            }
-
-         
-        }
-
+      
     }
 }
