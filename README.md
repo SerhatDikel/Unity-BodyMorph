@@ -6,9 +6,9 @@
 A tool for adjusting bone proportions in real time for Unity Humanoid Rigs.
 
 # How to Use
-To use the component, simply add BodyMorphLite to your character model. When there are changes in the feet and legs, you need to activate Kinematics for the character to fully touch the ground. If another IK is in use, it can be adjusted by reading BodyMorphLite.offset.<br />
+To use the component, simply add BodyMorphLite to your character model. When there are changes in the feet and legs, you need to activate Kinematics for the character to fully touch the ground. In this case, don't forget to enable ik in Animator Controller. If another IK is in use, it can be adjusted by reading BodyMorphLite.offset.<br />
 If your model has multiple SkinnedMeshRenderer and you're encountering errors, try manually selecting them.<br />
-BodyMorph Lite version only supports one SkinnedMeshRenderer and is compatible with only Humanoid Rigs.*
+BodyMorph Lite version only supports one SkinnedMeshRenderer and is compatible with only Humanoid Rigs*.
 
 
 ## Example
@@ -24,5 +24,5 @@ Serhat Dikel
 [Github/SerhatDikel](https://github.com/SerhatDikel)<br />
 [YouTube/SerhatDikel](https://www.youtube.com/@serhatdikel/videos)
 
-## License
+# License
 Copyright © 2024, Serhat Dikel. Released under the MIT License.
