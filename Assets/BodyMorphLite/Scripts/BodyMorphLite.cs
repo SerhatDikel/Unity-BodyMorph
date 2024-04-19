@@ -20,8 +20,6 @@ public class BodyMorphLite : MonoBehaviour
     float ankleHeight;
     
 
-    public SkinnedMeshRenderer avatarBody;
-
     public bool inverseKinematics;
     BipedalKinematics kinematics;
 
@@ -65,9 +63,6 @@ public class BodyMorphLite : MonoBehaviour
     void Initialize()
     {
         animator = GetComponent<Animator>();
-
-        avatarBody = GetComponentInChildren<SkinnedMeshRenderer>();
-
 
         if (animator.isHuman) 
         {
@@ -159,12 +154,6 @@ public class BodyMorphLite : MonoBehaviour
                     DestroyImmediate(kinematics);
                 };
             }
-        }
-
-        if(avatarBody == null)
-        {
-            Debug.LogError("Avatar Body is missing");
-            return;
         }
 
         Scale();
