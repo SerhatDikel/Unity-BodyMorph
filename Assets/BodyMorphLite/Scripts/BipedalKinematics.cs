@@ -7,35 +7,41 @@ using UnityEngine.UIElements;
 public class BipedalKinematics : MonoBehaviour
 {
     Animator animator;
-    float velocity;
-    float weight;
-    float lastHeight;
-    Vector3 lastPosition;
+
+    private float velocity;
+    private float weight;
+    private float lastHeight;
+    private Vector3 lastPosition;
 
     public bool leftEnabled, rightEnabled;
-    bool[] footOnGround;
+    private bool[] footOnGround;
 
     [HideInInspector] public bool onGround;
 
+    //Height Offset Range
     public float maxHeight = 0.5f;
     public float minHeight = 0.25f;
+
+    //Foot Radius
     public float radius = 0.05f;
 
+    [Range(0.1f, 5f)] public float offsetSpeed = 0.75f;
+    [Range(0.1f, 5f)] public float adaptSpeed = 1f;
+    [Range(0f, 360f)] public float adaptRotation = 90f;
 
-    [Range(0.1f, 10f)] public float adaptSpeed = 1f;
 
     public LayerMask layerMask = 1;
 
 
     [HideInInspector] public float offset = 0f;
 
-    Vector3[] ikPosition;
-    Vector3[]  ikNormal;
-    Quaternion[] ikRotation;
-    Quaternion[] lastRotation;
-    float[] lastFootHeight;
+    private Vector3[] ikPosition;
+    private Vector3[]  ikNormal;
+    private Quaternion[] ikRotation;
+    private Quaternion[] lastRotation;
+    private float[] lastFootHeight;
 
-    Transform[] foot;
+    private Transform[] foot;
 
     void Start()
     {
@@ -57,15 +63,12 @@ public class BipedalKinematics : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!animator) { return; }
-
+        //Last position and velocity modifier
         Vector3 targetVelocity = (lastPosition - transform.position) / Time.fixedDeltaTime;
-        velocity = Mathf.Clamp(targetVelocity.magnitude, 1, targetVelocity.magnitude);
+        velocity = Mathf.Clamp(targetVelocity.magnitude, 1.0f, targetVelocity.magnitude);
         lastPosition = transform.position;
 
-   
-
-        //On Ground
+        //Check if both feet on Ground
         onGround = footOnGround[1] || footOnGround[0];
 
         float targetWeight = onGround ? 1f : 0f;
@@ -79,8 +82,10 @@ public class BipedalKinematics : MonoBehaviour
             weight = Mathf.MoveTowards(weight, targetWeight, 10f * velocity * Time.fixedDeltaTime);
         }
     }
-    void LateUpdate()
+
+    private void LateUpdate()
     {
+        //Feet Solvers
         if (leftEnabled)
         {
             FootSolver(1, 0);
@@ -93,45 +98,47 @@ public class BipedalKinematics : MonoBehaviour
     }
     private void OnAnimatorIK(int layerIndex)
     {
-        if (!animator) { return; }
-
+        //Body Offset
         if (leftEnabled && rightEnabled)
         {
-            PelvisHeight();
+            HipsOffset();
         }
       
+        //Feet Offset
         if (leftEnabled)
         {
             FootMove(AvatarIKGoal.LeftFoot, 1);
         }
+
         if (rightEnabled)
         {
             FootMove(AvatarIKGoal.RightFoot, 0);
         }
     }
 
-    private void PelvisHeight()
+    //Body Offset
+    private void HipsOffset()
     {
         float leftOffset = ikPosition[1].y - transform.position.y;
         float rightOffset = ikPosition[0].y - transform.position.y;
         float hipsOffset = (leftOffset < rightOffset) ? leftOffset : rightOffset;
 
         Vector3 position = animator.bodyPosition;
-        float height = hipsOffset * (0.75f * weight);
+        float height = hipsOffset * (offsetSpeed * weight);
         lastHeight = Mathf.MoveTowards(lastHeight, height, Time.deltaTime);
         position.y += lastHeight + offset;
 
         animator.bodyPosition = position;
     }
 
-    void FootMove(AvatarIKGoal foot, int index)
+    //Position and Rotation of feet
+    private void FootMove(AvatarIKGoal foot, int index)
     {
         Vector3 targetPosition = animator.GetIKPosition(foot);
         Quaternion targetRotation = animator.GetIKRotation(foot);
 
         //Position
         targetPosition = transform.InverseTransformPoint(targetPosition);
-        //ikPosition[index] *= transform.localScale.y;
         ikPosition[index] = transform.InverseTransformPoint(ikPosition[index]);
         lastFootHeight[index] = Mathf.MoveTowards(lastFootHeight[index], ikPosition[index].y, adaptSpeed * Time.deltaTime);
         targetPosition.y += lastFootHeight[index];
@@ -143,31 +150,34 @@ public class BipedalKinematics : MonoBehaviour
 
         //Rotation
         Quaternion relative = Quaternion.Inverse(ikRotation[index] * targetRotation) * targetRotation;
-        lastRotation[index] = Quaternion.RotateTowards(lastRotation[index], Quaternion.Inverse(relative), 90f * Time.deltaTime);
+        lastRotation[index] = Quaternion.RotateTowards(lastRotation[index], Quaternion.Inverse(relative), adaptRotation * Time.deltaTime);
 
         targetRotation *= lastRotation[index];
 
-        //Set IK
+        //Set IK Goals
         animator.SetIKPosition(foot, targetPosition);
         animator.SetIKPositionWeight(foot, weight);
         animator.SetIKRotation(foot, targetRotation);
         animator.SetIKRotationWeight(foot, weight);
     }
 
-    void FootSolver(int current, int other)
+
+    private void FootSolver(int current, int other)
     {
-        float steps = maxHeight;
+        float height = maxHeight;
         if (!footOnGround[other])
         {
-            steps = minHeight;
+            height = minHeight;
         }
 
         Vector3 position = foot[current].position;
-        position.y = transform.position.y + steps;
+        position.y = transform.position.y + height;
 
-        float feetHeight = steps;
+        float feetHeight = height;
 
-        if (Physics.SphereCast(position, radius, Vector3.down, out RaycastHit hit, steps * 2f, layerMask))
+
+        //Check for collision
+        if (Physics.SphereCast(position, radius, Vector3.down, out RaycastHit hit, height * 2.0f, layerMask))
         {
             feetHeight = transform.position.y - hit.point.y;
 
@@ -180,12 +190,12 @@ public class BipedalKinematics : MonoBehaviour
             ikRotation[current] = Quaternion.AngleAxis(angle, axis);
         }
 
-        footOnGround[current] = feetHeight < steps;
+        footOnGround[current] = feetHeight < height;
 
+        //Align with animation while not on ground
         if (!footOnGround[current])
         {
-            ikPosition[current].y = transform.position.y - steps;
-
+            ikPosition[current].y = transform.position.y - height;
             ikRotation[current] = Quaternion.identity;
         }
     }

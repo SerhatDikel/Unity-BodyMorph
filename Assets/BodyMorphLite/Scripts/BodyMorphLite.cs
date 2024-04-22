@@ -5,10 +5,10 @@ using UnityEngine;
 [RequireComponent(typeof(Animator))]
 public class BodyMorphLite : MonoBehaviour
 {
-    Animator animator;
-    bool initialized;
+    private Animator animator;
+    private bool initialized;
 
-    Transform
+    private Transform
         hips, spine, chest, upperChest, neck, head, 
         leftHand, rightHand, leftFoot, rightFoot,
         leftFinger0, leftFinger1, leftFinger2, leftFinger3, leftFinger4,
@@ -17,11 +17,15 @@ public class BodyMorphLite : MonoBehaviour
         leftLeg, rightLeg, leftLowerLeg, rightLowerLeg, 
         leftShoulder, rightShoulder;
 
-    float ankleHeight;
-    
+    private float ankleHeight;
 
+    
     public bool inverseKinematics;
-    BipedalKinematics kinematics;
+
+    //For ease of access to reset and randomization
+    public bool reset, randomize;
+
+    private BipedalKinematics kinematics;
 
     [Header("Body")]
     [Range(0.5f, 1.5f)] public float heightInput = 1.0f;
@@ -47,11 +51,12 @@ public class BodyMorphLite : MonoBehaviour
     [Header("LowerBody")]
     [Range(0.8f, 1.2f)] public float legsInput = 1.0f;
     [Range(0.5f, 1.5f)] public float feetInput = 1.0f;
+
     [Range(0.01f, 0.5f)] public float feetRadius = 0.05f;
 
     [HideInInspector]public float offset = 1.0f;
 
-    // Start is called before the first frame update
+
     void Start()
     {
         if (!initialized)
@@ -116,19 +121,22 @@ public class BodyMorphLite : MonoBehaviour
 
         if(inverseKinematics)
         {
-            kinematics = GetComponent<BipedalKinematics>();
-            if (kinematics == null)
-            {
-                kinematics = gameObject.AddComponent<BipedalKinematics>();
-                kinematics.leftEnabled = true;
-                kinematics.rightEnabled = true;
-            }
+            InitializeKinematics();
         }
    
     }
 
+    void InitializeKinematics()
+    {
+        kinematics = GetComponent<BipedalKinematics>();
+        if (kinematics == null)
+        {
+            kinematics = gameObject.AddComponent<BipedalKinematics>();
+            kinematics.leftEnabled = true;
+            kinematics.rightEnabled = true;
+        }
+    }
 
-    //void OnValidate() { UnityEditor.EditorApplication.delayCall += Validate; }
 
     private void OnValidate()
     {
@@ -138,11 +146,11 @@ public class BodyMorphLite : MonoBehaviour
             Initialize();
         }
 
-        if(inverseKinematics  )
+        if(inverseKinematics)
         {
             if (kinematics == null)
             {
-                Initialize();
+                InitializeKinematics();
             }
         }
         else
@@ -156,44 +164,50 @@ public class BodyMorphLite : MonoBehaviour
             }
         }
 
+        if (reset)
+        {
+            reset = false;
+            Reset();
+
+            return;
+        }
+
+        if (randomize)
+        {
+            randomize = false;
+            Randomize();
+
+            return;
+        }
+
         Scale();
     }
 
     public void Scale()
     {
-#if UNITY_EDITOR
+
+        #if UNITY_EDITOR
         if (hips == null)
         {
             Initialize();
         }
-#endif
+        #endif
+
         //Calculating Scales
         float lowerBodyScale = lowerBodyInput;
-
         transform.localScale = (heightInput + lowerBodyScale - 1.0f) * Vector3.one;
-
         float spineScale = spineInput / lowerBodyScale;
-
         float upperLegScale = legsInput;
-
         float lowerLegScale = 1f / upperLegScale / upperLegScale / (feetInput / feetInput);
-
         float feetScale = 1f / lowerLegScale / legsInput * feetInput;
-
-    
         float waistScale = waistInput / spineScale / lowerBodyScale;
-
         float upperBodyScale = (waistScale + upperBodyInput - 1f);
-
         float chestScale = chestInput / waistScale / spineInput;
-
         float neckScale = neckInput / chestInput;
         float headScale = headInput / neckInput;
-
         float shoulderScale = shouldersInput / chestInput;
         float upperArmScale = upperArmsInput / shouldersInput;
         float lowerArmScale = lowerArmsInput / upperArmsInput;
-
         float handScale = handsInput / lowerArmsInput;
         float fingerScale = fingersInput;
 
@@ -205,30 +219,19 @@ public class BodyMorphLite : MonoBehaviour
         rightLowerLeg.localScale = lowerLegScale * Vector3.one;
         leftFoot.localScale = feetScale * Vector3.one;
         rightFoot.localScale = feetScale * Vector3.one;
-
-
         spine.localScale = spineScale * Vector3.one;
-
         chest.localScale = upperBodyScale * Vector3.one;
-
         upperChest.localScale = chestScale * Vector3.one;
-
         neck.localScale = neckScale * Vector3.one;
         head.localScale = headScale * Vector3.one;
-
         leftShoulder.localScale = shoulderScale * Vector3.one;
         rightShoulder.localScale = shoulderScale * Vector3.one;
-
         leftArm.localScale = upperArmScale * Vector3.one;
         rightArm.localScale = upperArmScale * Vector3.one;
-
         leftLowerArm.localScale = lowerArmScale * Vector3.one;
         rightLowerArm.localScale = lowerArmScale * Vector3.one;
-
-
         leftHand.localScale = handScale * Vector3.one;
         rightHand.localScale = handScale * Vector3.one;
-
         leftFinger0.localScale = fingerScale * Vector3.one;
         leftFinger1.localScale = fingerScale * Vector3.one;
         leftFinger2.localScale = fingerScale * Vector3.one;
@@ -239,8 +242,6 @@ public class BodyMorphLite : MonoBehaviour
         rightFinger2.localScale = fingerScale * Vector3.one;
         rightFinger3.localScale = fingerScale * Vector3.one;
         rightFinger4.localScale = fingerScale * Vector3.one;
-
-
 
         //Offset Output
         float legSlider, legOffset;
@@ -271,24 +272,42 @@ public class BodyMorphLite : MonoBehaviour
         heightInput = Random.Range(0.5f,1.5f);
         upperBodyInput = Random.Range(0.5f, 1.5f);
         lowerBodyInput = Random.Range(0.5f, 1.5f);
-
         headInput = Random.Range(0.5f,1.5f);
         neckInput = Random.Range(0.5f,1.5f);
-
         chestInput = Random.Range(0.5f,1.5f);
         shouldersInput = Random.Range(0.5f,1.5f);
         upperArmsInput = Random.Range(0.5f,1.5f);
         lowerArmsInput = Random.Range(0.5f,1.5f);
         handsInput = Random.Range(0.5f,1.5f);
         fingersInput = Random.Range(0.5f, 1.5f);
-
         spineInput = Random.Range(0.5f, 1.5f);
         legsInput = Random.Range(0.8f, 1.2f);
         feetInput = Random.Range(0.5f, 1.5f);
 
         Scale();
     }
- 
+
+    public void Reset()
+    {
+        heightInput = 1.0f;
+        upperBodyInput = 1.0f;
+        lowerBodyInput = 1.0f;
+        headInput = 1.0f;
+        neckInput = 1.0f;
+        waistInput = 1.0f;
+        chestInput = 1.0f;
+        spineInput = 1.0f;
+        shouldersInput = 1.0f;
+        upperArmsInput = 1.0f;
+        lowerArmsInput = 1.0f;
+        handsInput = 1.0f;
+        fingersInput = 1.0f;
+        legsInput = 1.0f;
+        feetInput = 1.0f;
+
+        Scale();
+    }
+
 
 
 }
