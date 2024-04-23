@@ -22,9 +22,6 @@ public class BodyMorphLite : MonoBehaviour
     
     public bool inverseKinematics;
 
-    //For ease of access to reset and randomization
-    public bool reset, randomize;
-
     private BipedalKinematics kinematics;
 
     [Header("Body")]
@@ -164,22 +161,7 @@ public class BodyMorphLite : MonoBehaviour
             }
         }
 
-        if (reset)
-        {
-            reset = false;
-            Reset();
-
-            return;
-        }
-
-        if (randomize)
-        {
-            randomize = false;
-            Randomize();
-
-            return;
-        }
-
+     
         Scale();
     }
 
@@ -262,11 +244,11 @@ public class BodyMorphLite : MonoBehaviour
 
         if (inverseKinematics)
         {
-            kinematics.offset = offset;
+            kinematics.Offset = offset;
             kinematics.radius = (feetRadius * transform.localScale.y) * feetInput;
         }
     }
-
+    [ContextMenu("Randomize")]
     public void Randomize()
     {
         heightInput = Random.Range(0.5f,1.5f);
@@ -287,6 +269,7 @@ public class BodyMorphLite : MonoBehaviour
         Scale();
     }
 
+    [ContextMenu("Reset")]
     public void Reset()
     {
         heightInput = 1.0f;

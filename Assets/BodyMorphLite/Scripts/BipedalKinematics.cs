@@ -8,15 +8,15 @@ public class BipedalKinematics : MonoBehaviour
 {
     Animator animator;
 
-    private float velocity;
     private float weight;
     private float lastHeight;
-    private Vector3 lastPosition;
 
     public bool leftEnabled, rightEnabled;
     private bool[] footOnGround;
 
-    [HideInInspector] public bool onGround;
+    private bool onGround;
+
+    public bool OnGround { get => onGround;}
 
     //Height Offset Range
     public float maxHeight = 0.5f;
@@ -25,15 +25,18 @@ public class BipedalKinematics : MonoBehaviour
     //Foot Radius
     public float radius = 0.05f;
 
-    [Range(0.1f, 5f)] public float offsetSpeed = 0.75f;
-    [Range(0.1f, 5f)] public float adaptSpeed = 1f;
+    [Header("Settings")]
+    [Range(0.1f, 10f)] public float offsetSpeed = 0.75f;
+    [Range(0.1f, 10f)] public float fallModifier = 1f;
+    [Range(0.1f, 10f)] public float adaptSpeed = 1f;
     [Range(0f, 360f)] public float adaptRotation = 90f;
 
 
     public LayerMask layerMask = 1;
 
 
-    [HideInInspector] public float offset = 0f;
+    private float offset = 0f;
+    public float Offset { get => offset; set => offset = value; }
 
     private Vector3[] ikPosition;
     private Vector3[]  ikNormal;
@@ -63,24 +66,11 @@ public class BipedalKinematics : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //Last position and velocity modifier
-        Vector3 targetVelocity = (lastPosition - transform.position) / Time.fixedDeltaTime;
-        velocity = Mathf.Clamp(targetVelocity.magnitude, 1.0f, targetVelocity.magnitude);
-        lastPosition = transform.position;
-
-        //Check if both feet on Ground
+        //Check if one of the feet on Ground
         onGround = footOnGround[1] || footOnGround[0];
 
-        float targetWeight = onGround ? 1f : 0f;
-
-        if (weight < targetWeight)
-        {
-            weight = Mathf.MoveTowards(weight, targetWeight, adaptSpeed * velocity * Time.fixedDeltaTime);
-        }
-        else
-        {
-            weight = Mathf.MoveTowards(weight, targetWeight, 10f * velocity * Time.fixedDeltaTime);
-        }
+        float targetWeight = onGround ? 1.0f : 0.0f;
+        weight = Mathf.MoveTowards(weight, targetWeight, adaptSpeed * Time.fixedDeltaTime);
     }
 
     private void LateUpdate()
@@ -88,12 +78,12 @@ public class BipedalKinematics : MonoBehaviour
         //Feet Solvers
         if (leftEnabled)
         {
-            FootSolver(1, 0);
+            FootIKTarget(1, 0);
         }
 
         if (rightEnabled)
         {
-            FootSolver(0, 1);
+            FootIKTarget(0, 1);
         }
     }
     private void OnAnimatorIK(int layerIndex)
@@ -107,12 +97,12 @@ public class BipedalKinematics : MonoBehaviour
         //Feet Offset
         if (leftEnabled)
         {
-            FootMove(AvatarIKGoal.LeftFoot, 1);
+            FootIKMove(AvatarIKGoal.LeftFoot, 1);
         }
 
         if (rightEnabled)
         {
-            FootMove(AvatarIKGoal.RightFoot, 0);
+            FootIKMove(AvatarIKGoal.RightFoot, 0);
         }
     }
 
@@ -124,15 +114,18 @@ public class BipedalKinematics : MonoBehaviour
         float hipsOffset = (leftOffset < rightOffset) ? leftOffset : rightOffset;
 
         Vector3 position = animator.bodyPosition;
-        float height = hipsOffset * (offsetSpeed * weight);
-        lastHeight = Mathf.MoveTowards(lastHeight, height, Time.deltaTime);
+
+        //Ascending-Descending Velocity
+        float offsetVelocity = lastHeight < hipsOffset ? offsetSpeed : offsetSpeed * fallModifier;
+
+        lastHeight = Mathf.MoveTowards(lastHeight, hipsOffset, offsetVelocity * Time.deltaTime);
         position.y += lastHeight + offset;
 
         animator.bodyPosition = position;
     }
 
     //Position and Rotation of feet
-    private void FootMove(AvatarIKGoal foot, int index)
+    private void FootIKMove(AvatarIKGoal foot, int index)
     {
         Vector3 targetPosition = animator.GetIKPosition(foot);
         Quaternion targetRotation = animator.GetIKRotation(foot);
@@ -162,7 +155,7 @@ public class BipedalKinematics : MonoBehaviour
     }
 
 
-    private void FootSolver(int current, int other)
+    private void FootIKTarget(int current, int other)
     {
         float height = maxHeight;
         if (!footOnGround[other])
