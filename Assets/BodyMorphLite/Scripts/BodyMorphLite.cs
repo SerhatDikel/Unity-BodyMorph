@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Animator))]
@@ -20,7 +18,7 @@ public class BodyMorphLite : MonoBehaviour
     private float ankleHeight;
 
     
-    public bool inverseKinematics;
+    [SerializeField] private bool inverseKinematics;
 
     private BipedalKinematics kinematics;
 
@@ -51,7 +49,9 @@ public class BodyMorphLite : MonoBehaviour
 
     [Range(0.01f, 0.5f)] public float feetRadius = 0.05f;
 
-    [HideInInspector]public float offset = 1.0f;
+    private float offset = 1.0f;
+
+    public float Offset => offset; 
 
 
     void Start()
@@ -129,8 +129,7 @@ public class BodyMorphLite : MonoBehaviour
         if (kinematics == null)
         {
             kinematics = gameObject.AddComponent<BipedalKinematics>();
-            kinematics.leftEnabled = true;
-            kinematics.rightEnabled = true;
+            kinematics.Initialize();
         }
     }
 
@@ -147,7 +146,10 @@ public class BodyMorphLite : MonoBehaviour
         {
             if (kinematics == null)
             {
-                InitializeKinematics();
+                UnityEditor.EditorApplication.delayCall += () =>
+                {
+                    InitializeKinematics();
+                };
             }
         }
         else
@@ -165,7 +167,7 @@ public class BodyMorphLite : MonoBehaviour
         Scale();
     }
 
-    public void Scale()
+    private void Scale()
     {
 
         #if UNITY_EDITOR

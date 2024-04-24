@@ -1,9 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Collections;
-using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.UIElements;
+﻿using UnityEngine;
 
 public class Demonstration : MonoBehaviour
 {
@@ -20,13 +15,13 @@ public class Demonstration : MonoBehaviour
     public float dropTime;
     int objectOrder;
     Vector3 targetPosition;
-    // Start is called before the first frame update
-    void Start()
+    
+    private void Awake()
     {
         objectPool = new GameObject[] {
+            GameObject.CreatePrimitive(PrimitiveType.Sphere),
             GameObject.CreatePrimitive(PrimitiveType.Cube),
-            GameObject.CreatePrimitive(PrimitiveType.Cube),
-            GameObject.CreatePrimitive(PrimitiveType.Sphere)
+            GameObject.CreatePrimitive(PrimitiveType.Cube)
         };
 
         foreach (GameObject obj in objectPool)
@@ -39,8 +34,8 @@ public class Demonstration : MonoBehaviour
 
         dropTime = 0f;
     }
-    // Update is called once per frame
-    void Update()
+
+    private void Update()
     {
         if(movement > 0f)
         {
@@ -50,7 +45,7 @@ public class Demonstration : MonoBehaviour
             {
                 objectPool[objectOrder].SetActive(true);
 
-                if (objectOrder != objectPool.Length - 1)
+                if (objectOrder != 0)
                 {
                     Vector3 rotation = new Vector3(Random.Range(-15f, 15f), 0f, 0f);
                     objectPool[objectOrder].transform.eulerAngles = rotation;
