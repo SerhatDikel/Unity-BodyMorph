@@ -7,17 +7,17 @@ public class BodyMorphLite : MonoBehaviour
     private bool initialized;
 
     private Transform
-        hips, spine, chest, upperChest, neck, head, 
+        hips, spine, chest, upperChest, neck, head,
         leftHand, rightHand, leftFoot, rightFoot,
         leftFinger0, leftFinger1, leftFinger2, leftFinger3, leftFinger4,
         rightFinger0, rightFinger1, rightFinger2, rightFinger3, rightFinger4,
-        leftArm, rightArm, leftLowerArm, rightLowerArm, 
-        leftLeg, rightLeg, leftLowerLeg, rightLowerLeg, 
+        leftArm, rightArm, leftLowerArm, rightLowerArm,
+        leftLeg, rightLeg, leftLowerLeg, rightLowerLeg,
         leftShoulder, rightShoulder;
 
     private float ankleHeight;
 
-    
+
     [SerializeField] private bool inverseKinematics;
 
     private BipedalKinematics kinematics;
@@ -51,7 +51,7 @@ public class BodyMorphLite : MonoBehaviour
 
     private float offset = 1.0f;
 
-    public float Offset => offset; 
+    public float Offset { get => offset; }
 
 
     void Start()

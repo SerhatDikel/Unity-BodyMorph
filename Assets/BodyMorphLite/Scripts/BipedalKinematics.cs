@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Reflection;
-using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.UIElements;
+﻿using UnityEngine;
+
 
 [RequireComponent(typeof(Animator))]
 public class BipedalKinematics : MonoBehaviour
@@ -38,7 +35,7 @@ public class BipedalKinematics : MonoBehaviour
 
     private float offset = 0f;
 
-    public float Offset { get => offset; set => offset = value; }
+    public float Offset { set => offset = value; }
 
    
 
