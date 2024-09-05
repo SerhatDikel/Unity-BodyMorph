@@ -12,7 +12,7 @@ When there are changes in the feet and legs, you need to activate Kinematics for
 If another IK is in use, the offset value can be accessed via "BodyMorphLite.Offset".<br />
 Additionally, for ease of use, the Reset and Randomize functions can also be accessed from the context menu.<br />
 <br />
-BodyMorph Lite version is only compatible with only Humanoid Rigs*.
+BodyMorph Lite version is only compatible with Humanoid Rigs*.
 
 
 ## Example
